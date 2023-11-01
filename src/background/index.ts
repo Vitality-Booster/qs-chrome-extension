@@ -1,4 +1,5 @@
 import {runtime, storage, tabs} from 'webextension-polyfill'
+import { getCurrentTab } from '../helpers/tabs'
 
 type Message = {
     from: string
@@ -6,11 +7,11 @@ type Message = {
     action: string
 }
 
-async function getCurrentTab() {
-    const list = await tabs.query({active: true, currentWindow: true})
-
-    return list[0]
-}
+// async function getCurrentTab() {
+//     const list = await tabs.query({active: true, currentWindow: true})
+//
+//     return list[0]
+// }
 
 async function incrementsStoredValue(tabId: string) {
     const data = await storage.local.get(tabId)
