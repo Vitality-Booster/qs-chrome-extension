@@ -1,8 +1,12 @@
 import {runtime, storage, tabs} from 'webextension-polyfill'
-import { getCurrentTab } from '../helpers/tabs'
-import * as mongoose from "mongoose";
-import {equal} from "assert";
+import {getCurrentTab, updatePreviousTab, Tab} from '../helpers/tabs'
+import {updatePrevWebsite, Website} from "../helpers/websites";
+import {connect} from "mongoose";
+import {logIn, signUp} from "../helpers/users";
 
+// TODO
+//  1. Solve an issue with Mongoose
+//  2. Solve an issue with env file and webpack / cra
 const DB_CONNECT_STRING = process.env.DB_CONNECT ?? "mongodb://127.0.0.1:27017/myapp";
 
 type Message = {
@@ -11,12 +15,6 @@ type Message = {
     action: string
 }
 
-// async function getCurrentTab() {
-//     const list = await tabs.query({active: true, currentWindow: true})
-//
-//     return list[0]
-// }
-
 async function incrementsStoredValue(tabId: string) {
     const data = await storage.local.get(tabId)
     const currentValue = data?.[tabId] ?? 0
@@ -24,18 +22,11 @@ async function incrementsStoredValue(tabId: string) {
     return storage.local.set({[tabId]: currentValue + 1})
 }
 
-async function updatePreviousTab(tabId: number) {
-    return storage.local.set({"prevTab": tabId})
-}
-
-async function getPreviousTab() {
-    const previousTabRec: Record<string, number> = await storage.local.get("prevTab")
-    const previousTabId: number = previousTabRec["prevTab"]
-    return tabs.get(previousTabId)
-}
-
 export async function init() {
     await storage.local.clear()
+    console.log("This is the DB_CONNECT value: " + DB_CONNECT_STRING)
+    await connect(DB_CONNECT_STRING, {dbName: "quantified_student"});
+    await signUp({email: "testuser@gmail.com", password: "12345678"})
     // await storage.local.set({"prevTab": 0})
     // the message receiver
     runtime.onMessage.addListener(async (message: Message) => {
@@ -52,33 +43,34 @@ export async function init() {
 }
 
 tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-    if (changeInfo.url) {
-        const prevTab = await getPreviousTab()
-        console.log(`Previous Tab Data: ID === ${prevTab.id}; Active === ${prevTab.active}; URL === ${prevTab.url}`)
-        console.log(`'Change To' Tab Data: ID === ${tabId}; Active === ${tab.active}; URL === ${changeInfo.url}`)
-        console.log(`Are Tab ID and tab.id equal? -> ${(tabId === tab.id)} \nTab ID: ${tabId}; tab.id: ${tab.id}`)
-        console.log(`Are changeInfo.url and tab.url equal? -> ${(changeInfo.url === tab.url)} \nchangeInfo.url: ${changeInfo.url}; tab.url: ${tab.url}`)
-        return;
+    if (changeInfo.url && tab.active) {
+        const url = new URL(changeInfo.url)
+        const website: Website = {hostname: url.hostname, fullUrl: changeInfo.url, title: tab.title, favIconUrl: tab.favIconUrl}
+        await updatePrevWebsite(website)
     }
-    // console.log("Yes: " + tab.url)
 });
 
 tabs.onActivated.addListener(async (activeInfo) => {
-    const previousTabRec: Record<string, number> = await storage.local.get("prevTab")
-    if (previousTabRec["prevTab"]) {
-        const previousTab = await tabs.get(previousTabRec["prevTab"])
-        // console.log(`Previous Tab data: Active === ${previousTab.active}; URL === ${previousTab.url}`)
-    }
     const currentTab = await tabs.get(activeInfo.tabId)
-    // console.log(`Current Tab data: Active === ${currentTab.active}; URL === ${currentTab.url}`)
+    if (currentTab.url) {
+        const url = new URL(currentTab.url)
+        const website: Website = {
+            hostname: url?.hostname ?? "Starting page",
+            fullUrl: currentTab.url ?? "Starting page",
+            title: currentTab.title,
+            favIconUrl: currentTab.favIconUrl
+        }
+        await updatePrevWebsite(website)
+    }
     await updatePreviousTab(activeInfo.tabId)
 })
 
 // todo Shall I create a matrix for tab data (?)
 
-runtime.onStartup.addListener(async () => {
-    await mongoose.connect(DB_CONNECT_STRING);
-})
+// runtime.onStartup.addListener(async () => {
+//     await mongoose.connect(DB_CONNECT_STRING, {dbName: "quantified_student"});
+//     await signUp({email: "testuser@gmail.com", password: "12345678"})
+// })
 
 runtime.onInstalled.addListener(() => {
     init().then(() => {

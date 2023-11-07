@@ -4,8 +4,8 @@ export interface IStatement {
     actor: Types.ObjectId,
     action: string,
     object: string,
-    createdAt: Date,
-    updatedAt: Date
+    createdAt?: Date,
+    updatedAt?: Date
 }
 
 const statementSchema = new Schema<IStatement>(
@@ -18,4 +18,4 @@ const statementSchema = new Schema<IStatement>(
         timestamps: true
     })
 
-export const StatementModel = model<IStatement>("Statements", statementSchema)
+export const StatementModel = model<IStatement>("Statements", statementSchema, "statements")
