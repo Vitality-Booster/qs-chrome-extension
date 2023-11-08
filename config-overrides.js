@@ -1,5 +1,4 @@
 const {override} = require("customize-cra");
-require("dotenv").configDotenv()
 const overrideEntry = (config) => {
     config.entry = {
         main: './src/popup', // the extension UI

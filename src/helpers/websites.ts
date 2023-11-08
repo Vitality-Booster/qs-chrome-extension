@@ -14,22 +14,24 @@ export type Website = {
 
 export async function updatePrevWebsite(newWebsite: Website): Promise<void> {
     const prevWebsite = await getPrevWebsite()
+    console.log("This is the previous website data: " + JSON.stringify(prevWebsite))
     if (prevWebsite?.hostname !== newWebsite.hostname) {
         // Creating a "Closed action statement" for the previous Website
         const userId = await getCurrUserId()
         if (!userId)
             throw Error("Please, login first!")
         if (prevWebsite)
-            await createStatement(userId, prevWebsite, ActionEnum.Closed)
+            await createStatement(prevWebsite, ActionEnum.Closed)
 
-        // Creating an "Opened action statement" for the new Website
-        await createStatement(userId, newWebsite, ActionEnum.Opened)
         console.log(`Updated the latest Website to: Hostname --- ${newWebsite.hostname}, Full URL --- ${newWebsite.fullUrl}`)
         await setPrevWebsite(newWebsite)
+        // Creating an "Opened action statement" for the new Website
+        await createStatement(newWebsite, ActionEnum.Opened)
     }
 }
 
 async function setPrevWebsite(website: Website): Promise<void> {
+    console.log("The website that I get: " + JSON.stringify(website))
     await storage.local.set({[PREVIOUS_WEBSITE]: website})
 }
 

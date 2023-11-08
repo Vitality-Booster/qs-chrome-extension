@@ -1,13 +1,7 @@
 import {runtime, storage, tabs} from 'webextension-polyfill'
 import {getCurrentTab, updatePreviousTab, Tab} from '../helpers/tabs'
 import {updatePrevWebsite, Website} from "../helpers/websites";
-import {connect} from "mongoose";
 import {logIn, signUp} from "../helpers/users";
-
-// TODO
-//  1. Solve an issue with Mongoose
-//  2. Solve an issue with env file and webpack / cra
-const DB_CONNECT_STRING = process.env.DB_CONNECT ?? "mongodb://127.0.0.1:27017/myapp";
 
 type Message = {
     from: string
@@ -24,9 +18,7 @@ async function incrementsStoredValue(tabId: string) {
 
 export async function init() {
     await storage.local.clear()
-    console.log("This is the DB_CONNECT value: " + DB_CONNECT_STRING)
-    await connect(DB_CONNECT_STRING, {dbName: "quantified_student"});
-    await signUp({email: "testuser@gmail.com", password: "12345678"})
+    await logIn({email: "testuser@gmail.com", password: "12345678"})
     // await storage.local.set({"prevTab": 0})
     // the message receiver
     runtime.onMessage.addListener(async (message: Message) => {
@@ -66,11 +58,6 @@ tabs.onActivated.addListener(async (activeInfo) => {
 })
 
 // todo Shall I create a matrix for tab data (?)
-
-// runtime.onStartup.addListener(async () => {
-//     await mongoose.connect(DB_CONNECT_STRING, {dbName: "quantified_student"});
-//     await signUp({email: "testuser@gmail.com", password: "12345678"})
-// })
 
 runtime.onInstalled.addListener(() => {
     init().then(() => {
