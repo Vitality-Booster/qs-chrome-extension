@@ -1,17 +1,13 @@
 import {runtime, storage, tabs} from 'webextension-polyfill'
-import { getCurrentTab } from '../helpers/tabs'
+import {getCurrentTab, updatePreviousTab, Tab} from '../helpers/tabs'
+import {updatePrevWebsite, Website} from "../helpers/websites";
+import {logIn, signUp} from "../helpers/users";
 
 type Message = {
     from: string
     to: string
     action: string
 }
-
-// async function getCurrentTab() {
-//     const list = await tabs.query({active: true, currentWindow: true})
-//
-//     return list[0]
-// }
 
 async function incrementsStoredValue(tabId: string) {
     const data = await storage.local.get(tabId)
@@ -22,6 +18,8 @@ async function incrementsStoredValue(tabId: string) {
 
 export async function init() {
     await storage.local.clear()
+    await logIn({email: "testuser@gmail.com", password: "12345678"})
+    // await storage.local.set({"prevTab": 0})
     // the message receiver
     runtime.onMessage.addListener(async (message: Message) => {
         if (message.to === 'background') {
@@ -35,6 +33,31 @@ export async function init() {
         }
     })
 }
+
+tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+    if (changeInfo.url && tab.active) {
+        const url = new URL(changeInfo.url)
+        const website: Website = {hostname: url.hostname, fullUrl: changeInfo.url, title: tab.title, favIconUrl: tab.favIconUrl}
+        await updatePrevWebsite(website)
+    }
+});
+
+tabs.onActivated.addListener(async (activeInfo) => {
+    const currentTab = await tabs.get(activeInfo.tabId)
+    if (currentTab.url) {
+        const url = new URL(currentTab.url)
+        const website: Website = {
+            hostname: url?.hostname ?? "Starting page",
+            fullUrl: currentTab.url ?? "Starting page",
+            title: currentTab.title,
+            favIconUrl: currentTab.favIconUrl
+        }
+        await updatePrevWebsite(website)
+    }
+    await updatePreviousTab(activeInfo.tabId)
+})
+
+// todo Shall I create a matrix for tab data (?)
 
 runtime.onInstalled.addListener(() => {
     init().then(() => {

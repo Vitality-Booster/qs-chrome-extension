@@ -21,4 +21,7 @@ const overrideOutput = (config) => {
 
 module.exports = {
     webpack: (config) => override(overrideEntry, overrideOutput)(config),
+    // env: {
+    //     DB_CONNECT = process.env.DB_CONNECT,
+    // },
 }
