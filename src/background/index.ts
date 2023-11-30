@@ -38,6 +38,7 @@ tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (changeInfo.url && tab.active) {
         const url = new URL(changeInfo.url)
         const website: Website = {hostname: url.hostname, fullUrl: changeInfo.url, title: tab.title, favIconUrl: tab.favIconUrl}
+        console.log(tab.favIconUrl)
         await updatePrevWebsite(website)
     }
 });
