@@ -1,6 +1,5 @@
 import {storage} from "webextension-polyfill"
-import {User} from "../models/userModel";
-import axios from "axios";
+import {User} from "../types/user";
 
 const api = "http://localhost:8081/users/"
 const CURRENT_USER = "currUser"

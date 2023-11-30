@@ -1,7 +1,9 @@
+import {Website} from "../helpers/websites";
+
 export interface Statement {
     actor: string,
     action: string,
-    object: string,
-    createdAt: string,
-    updatedAt?: string
+    object: Website,
+    openedAt: string,
+    closedAt?: string
 }
