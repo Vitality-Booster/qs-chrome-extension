@@ -15,15 +15,15 @@ export async function getOverallWebsites() {
 
 }
 
-export async function setOverallWebsites(overalWebsites: OverallWebsite[]) {
-    await storage.local.set({[CURRENT_USER]: overalWebsites})
-}
-
-export async function getCurrUserId(): Promise<string | null> {
-    const userRec = await storage.local.get(CURRENT_USER)
-    return userRec[CURRENT_USER] ?? null
-}
-
-async function setCurrUser(userId: string): Promise<void> {
-    await storage.local.set({[CURRENT_USER]: userId})
-}
+// export async function setOverallWebsites(overalWebsites: OverallWebsite[]) {
+//     await storage.local.set({[CURRENT_USER]: overalWebsites})
+// }
+//
+// export async function getCurrUserId(): Promise<string | null> {
+//     const userRec = await storage.local.get(CURRENT_USER)
+//     return userRec[CURRENT_USER] ?? null
+// }
+//
+// async function setCurrUser(userId: string): Promise<void> {
+//     await storage.local.set({[CURRENT_USER]: userId})
+// }
