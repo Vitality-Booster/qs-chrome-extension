@@ -3,6 +3,7 @@ import {getCurrentTab, updatePreviousTab, Tab} from '../helpers/tabs'
 import {Website} from "../helpers/websites";
 import {logIn, signUp} from "../helpers/users";
 import {setStatements, updateStatements} from "../helpers/statements";
+import {getWebsiteStats} from "../helpers/statistics";
 
 type Message = {
     from: string
@@ -21,6 +22,7 @@ export async function init() {
     await storage.local.clear()
     await logIn({email: "testuser@gmail.com", password: "12345678"})
     await setStatements([])
+    await getWebsiteStats()
     runtime.onMessage.addListener(async (message: Message) => {
         if (message.to === 'background') {
             console.log('background handled: ', message.action)

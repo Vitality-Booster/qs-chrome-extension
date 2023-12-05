@@ -1,38 +1,72 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
 import mockJson from '../../assets/mock.json'
 import {Website} from "../Website/Website";
 import Chart from "react-apexcharts";
+import {OverallWebsite} from "../../types/statistics";
+import {getOverallWebsites, getWebsiteStats} from "../../helpers/statistics";
 
+interface ChartState {
+    options: {
+        labels: string[]
+    },
+    series: number[]
+}
 
 function App() {
+    const [statistics, setStatistics] = useState<OverallWebsite[] | null>(null)
+    const [chartState, setChartState] = useState<ChartState | null>(null)
 
-    const state = {
-        options: {
-            labels: ["youtube.com", "google.com.au", "instagram.com", "goodreads.com", "sciencedirect.com", "nationalgeographic.com", "facebook.com"]
-        },
-        series: [3.76, 1.95, 1.74, 1.3, 0.76, 0.45, 0.39],
-    };
+    useEffect(() => {
+        async function getWebsiteStatistics() {
+            let data: OverallWebsite[] | null = await getOverallWebsites()
+            if (!data) {
+                data = await getWebsiteStats()
+            }
+
+            const labels: string[] = []
+            const series: number[] = []
+            
+            data.forEach(st => {
+                labels.push(st.hostname)
+                series.push(st.length)
+            })
+
+            console.log("The labels that I collected: " + JSON.stringify(labels))
+            console.log("The series that I collected: " + JSON.stringify(series))
+
+            setChartState({options: {labels: labels}, series: series})
+            setStatistics(data)
+        }
+
+        getWebsiteStatistics()
+    }, []);
+
+    // const state = {
+    //     options: {
+    //         labels: ["youtube.com", "google.com.au", "instagram.com", "goodreads.com", "sciencedirect.com", "nationalgeographic.com", "facebook.com"]
+    //     },
+    //     series: [3.76, 1.95, 1.74, 1.3, 0.76, 0.45, 0.39],
+    // };
 
   return (
     <div className="App">
       <div className="header">
         <h3 className="title">Quantified student dashboard</h3>
       </div>
-      <div>
+        { chartState && <div>
           <Chart
-              options={state.options}
-              series={state.series}
+              options={chartState.options}
+              series={chartState.series}
               type="donut"
               width="100%"
           />
-      </div>
+        </div> }
       <div className="list">
-          {mockJson
-              .sort((a, b) => a.length < b.length ? 1 : -1)
-              .map((website, key) =>(
+          {statistics && 
+              statistics.map((website, key) =>(
               <div key={key}>
-                  <Website favicon={website.favIconUrl} length={website.length} name={website.hostname}/>
+                  <Website overallWebsite={website}/>
               </div>
           ))}
       </div>

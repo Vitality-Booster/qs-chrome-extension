@@ -1,9 +1,12 @@
 import "./Website.css"
-export const Website = ({ favicon, name, length }: { favicon:string, name: string, length:number }) => {
+import {OverallWebsite} from "../../types/statistics";
+export const Website = ({overallWebsite}: { overallWebsite: OverallWebsite }) => {
 
     const readableLength = (length: number) => {
-        const minutes = Math.floor(60 * (length % 1))
-        const hours = Math.floor(length)
+        // const minutes = Math.floor(60 * (length % 1))
+        // const hours = Math.floor(length)
+        const minutes = length % 60
+        const hours = ~~(length / 60)
         if (hours > 0){
             return hours + "h" + minutes + "m"}
         else{ return minutes + "m" }
@@ -17,21 +20,21 @@ export const Website = ({ favicon, name, length }: { favicon:string, name: strin
         <div>
             <div className="contents">
                 <div className="top">
-                    <img src={favicon} className="favicon" alt="Website favicon"/>
-                    <p style={{margin: 0, marginLeft: "1em"}}>{name}</p>
+                    <img src={overallWebsite.favIconUrl} className="favicon" alt="Website favicon"/>
+                    <p style={{margin: 0, marginLeft: "1em"}}>{overallWebsite.hostname}</p>
                 </div>
                 <div className="top">
                     <div style={{
                         width: "20%"
                     }}>
-                        <p style={{margin: 0}}>{readableLength(length)}</p>
+                        <p style={{margin: 0}}>{readableLength(overallWebsite.length)}</p>
                     </div>
                     <div className="bar">
                         <div style={{
                             background: "grey",
                             borderRadius: "5px",
                             height: "100%",
-                            width: totalPercentage(length)
+                            width: totalPercentage(overallWebsite.length)
                         }}>
                         </div>
                     </div>

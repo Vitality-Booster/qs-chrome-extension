@@ -1,29 +1,45 @@
-import {OverallWebsite} from "../types/statistics";
+import {OverallWebsite, OverallWebsiteRes} from "../types/statistics";
 import {storage} from "webextension-polyfill";
+import {getCurrUserId} from "./users";
 
 const api = "http://localhost:8081/statistics/"
+const OVERALL_WEBSITES = "overallWebsites"
 
-export async function getWebsiteStats(): Promise<void> {
-    const res = await fetch(api + "overall-websites/:id", { method: "GET",  headers: {
+export async function getWebsiteStats(): Promise<OverallWebsite[]> {
+    const currUserId = await getCurrUserId()
+    if (!currUserId)
+        throw Error("Please, Log in first")
+
+    const res = await fetch(api + `overall-websites/${currUserId}`, { method: "GET",  headers: {
             "Content-Type": "application/json" }})
 
     const data = await res.json()
-    console.log(data)
+    const statisticsRes: OverallWebsiteRes[] = data.statistics
+
+    const statistics: OverallWebsite[] = await toOverallWebsitesAll(statisticsRes)
+
+    await setOverallWebsites(statistics)
+
+    return statistics
+}
+
+export async function toOverallWebsite(overallWebsiteRes: OverallWebsiteRes): Promise<OverallWebsite> {
+    return {hostname: overallWebsiteRes._id, favIconUrl: overallWebsiteRes.favIconUrl, length: overallWebsiteRes.length}
+}
+
+export async function toOverallWebsitesAll(overallWebsitesRes: OverallWebsiteRes[]): Promise<OverallWebsite[]> {
+    const overallWebsites: OverallWebsite[] = []
+
+    overallWebsitesRes.forEach(async (web) => overallWebsites.push(await toOverallWebsite(web)))
+
+    return overallWebsites
 }
 
 export async function getOverallWebsites() {
-
+    const websitesRec = await storage.local.get(OVERALL_WEBSITES)
+    return websitesRec[OVERALL_WEBSITES] ?? null
 }
 
-// export async function setOverallWebsites(overalWebsites: OverallWebsite[]) {
-//     await storage.local.set({[CURRENT_USER]: overalWebsites})
-// }
-//
-// export async function getCurrUserId(): Promise<string | null> {
-//     const userRec = await storage.local.get(CURRENT_USER)
-//     return userRec[CURRENT_USER] ?? null
-// }
-//
-// async function setCurrUser(userId: string): Promise<void> {
-//     await storage.local.set({[CURRENT_USER]: userId})
-// }
+export async function setOverallWebsites(overalWebsites: OverallWebsite[]) {
+    await storage.local.set({[OVERALL_WEBSITES]: overalWebsites})
+}

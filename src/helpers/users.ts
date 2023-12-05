@@ -22,8 +22,6 @@ export async function logIn(user: User): Promise<void> {
 
     const data = await res.json()
     const userRes: User = data.user
-    console.log("The user I get after login: " + JSON.stringify(userRes))
-    console.log("This is the userRes._id: " + userRes._id)
 
     // if (!dbUser)
     //     throw Error("User not Found")
