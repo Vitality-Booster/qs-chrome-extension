@@ -1,6 +1,5 @@
 import {storage} from "webextension-polyfill"
-import {User} from "../models/userModel";
-import axios from "axios";
+import {User} from "../types/user";
 
 const api = "http://localhost:8081/users/"
 const CURRENT_USER = "currUser"
@@ -15,19 +14,14 @@ async function setCurrUser(userId: string): Promise<void> {
 }
 
 export async function logIn(user: User): Promise<void> {
-    console.log("I am here 1!")
     const currUserId = await getCurrUserId()
     if (currUserId)
         throw Error("You are already logged in. Log out first, please")
-    console.log("I am here 22!")
     const res = await fetch(api + "login", { method: "POST",  headers: {
             "Content-Type": "application/json" }, body: JSON.stringify(user) });
 
-    console.log("I am here 333!")
     const data = await res.json()
     const userRes: User = data.user
-    console.log("The user I get after login: " + JSON.stringify(userRes))
-    console.log("This is the userRes._id: " + userRes._id)
 
     // if (!dbUser)
     //     throw Error("User not Found")
