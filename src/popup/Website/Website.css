@@ -1,0 +1,25 @@
+.favicon{
+    width: 16px;
+    height: 16px;
+}
+
+.top{
+    display:flex;
+    flex-direction: row;
+}
+
+.contents{
+    padding-left: 0.5em;
+}
+
+.bar{
+    margin-top: 0.3em;
+    height: 10px;
+    width: 100%;
+}
+
+.total{
+    background: dimgray;
+    height: 100%;
+    width: 35%;
+}
